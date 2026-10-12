@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         Paper format — A5 landscape, 210x148mm
+
+         This is the size of the printed voucher pad, and it is load-bearing:
+         the type scale in journal_entry_voucher_templates.xml is measured for
+         a 194mm printable width (210 less the 8mm side margins). If this
+         format ever changes, rescale the type with it - see note 1 at the top
+         of that file.
+
+         There is no `div.header` or `div.footer` in the template, so
+         `header_spacing` has nothing to clear and the body starts at
+         `margin_top`. The margins are small because the stationery's curves
+         are drawn inside the body and are meant to reach the paper edge.
+         ================================================================== -->
+    <record id="paperformat_journal_entry_voucher" model="report.paperformat">
+        <field name="name">Journal Entry Voucher A5 Landscape</field>
+        <field name="format">A5</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">6</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_spacing">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- ==================================================================
+         Report actions
+
+         `binding_model_id` is what puts both of these under the journal
+         entry's native Print dropdown. They differ only in which side of the
+         entry they print: دفع takes the debit lines, قبض the credit ones. See
+         VOUCHER_SIDES in models/account_move.py.
+         ================================================================== -->
+
+    <record id="action_report_payment_voucher" model="ir.actions.report">
+        <field name="name">سند دفع — Payment Voucher</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">journal_entry_payment_voucher.report_payment_voucher</field>
+        <field name="report_file">journal_entry_payment_voucher.report_payment_voucher</field>
+        <field name="print_report_name">'سند دفع - %s' % (object.name or object.ref or object.id)</field>
+        <field name="paperformat_id" ref="paperformat_journal_entry_voucher"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_receipt_voucher" model="ir.actions.report">
+        <field name="name">سند قبض — Receipt Voucher</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">journal_entry_payment_voucher.report_receipt_voucher</field>
+        <field name="report_file">journal_entry_payment_voucher.report_receipt_voucher</field>
+        <field name="print_report_name">'سند قبض - %s' % (object.name or object.ref or object.id)</field>
+        <field name="paperformat_id" ref="paperformat_journal_entry_voucher"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

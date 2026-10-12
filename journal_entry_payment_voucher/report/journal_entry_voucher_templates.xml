@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         سند دفع / سند قبض — the voucher stationery
+         ==================================================================
+
+         Three things worth knowing before editing:
+
+         1. THE PAPER IS A5 LANDSCAPE (210x148mm), which is the size of the
+            printed voucher pad. Every size below is measured for it, and the
+            type scale is the part that does not survive a change of paper: at
+            96 dpi the printable width is about 733px, so the 10.5px body here
+            sits on the page like a 15px body would on A4 landscape. Change the
+            format on `paperformat_journal_entry_voucher`
+            (journal_entry_voucher_reports.xml) and the type has to be rescaled
+            with it or the document will look like a photocopy enlargement.
+
+         2. This is a ONE-PAGE document and the stationery is drawn inside the
+            body, not in `div.header` / `div.footer`. Only those two repeat per
+            page in wkhtmltopdf, so an entry with enough rows to spill will
+            print a second page carrying the table alone - the curves, the logo
+            and the contact strip stay on page one. That is the deliberate
+            trade: the corner curves are 40% of an A5 sheet, and reserving that
+            much top and bottom margin on every page to make them repeat would
+            leave about 30mm of usable height. A5 landscape fits eight rows -
+            measured by rendering, not guessed; past that, print A4 (see note
+            1). What sets that number is `.jev-body`'s padding-bottom, which
+            reserves the band the signature block and the contact strip are
+            pinned into.
+
+         3. Arabic needs a font with Arabic glyphs - Odoo's report font has
+            none and wkhtmltopdf draws tofu boxes instead. Cairo is shipped in
+            static/fonts in three real weights. It is also chosen for what it
+            does NOT do: it leaves the ASCII digits alone, where the older
+            house face (GE Dinar Two) remaps them to Arabic-Indic glyphs, and
+            a voucher's figures have to read 1, 2, 3.
+         ================================================================== -->
+
+    <template id="report_voucher_style">
+        <style>
+            @font-face {
+                font-family: 'Cairo';
+                src: url('/journal_entry_payment_voucher/static/fonts/Cairo-Regular.ttf') format('truetype');
+                font-weight: 400;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: 'Cairo';
+                src: url('/journal_entry_payment_voucher/static/fonts/Cairo-SemiBold.ttf') format('truetype');
+                font-weight: 600;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: 'Cairo';
+                src: url('/journal_entry_payment_voucher/static/fonts/Cairo-Bold.ttf') format('truetype');
+                font-weight: 700;
+                font-style: normal;
+            }
+
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: transparent !important;
+                /* Without these the curves print as empty outlines: the PDF
+                   engine drops background colours unless print colour
+                   adjustment is forced. */
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Odoo's minimal layout puts Bootstrap's `container` on the body,
+               which caps it at ~720px and centres it. The voucher has to reach
+               its own margins, so the cap comes off. */
+            body.container, body.container-fluid {
+                max-width: none !important;
+                width: 100% !important;
+            }
+
+            .jev {
+                font-family: 'Cairo', 'Noto Naskh Arabic', 'DejaVu Sans', sans-serif;
+                font-size: 10.5px;
+                line-height: 1.5;
+                color: #111;
+                /* Each element states its own direction. The page is Arabic but
+                   half of it is bilingual, and leaving the document direction
+                   to be inherited is what makes a colon or a currency code jump
+                   to the wrong end of a line. */
+                unicode-bidi: plaintext;
+            }
+
+            .jev-page {
+                position: relative;
+                /* Just under the printable height at A5 landscape, which is
+                   134mm: 148mm of paper less the paper format's 8mm top and 6mm
+                   bottom margins. Deliberately NOT 134mm - a box exactly as
+                   tall as the area it sits in rounds up by a fraction of a
+                   pixel and spills a second, empty page, and that page then
+                   prints on every voucher in the pad. The 2mm of slack is what
+                   buys the guarantee.
+
+                   It is a minimum, not a cap: an entry with more rows than fit
+                   flows onto a second page rather than being clipped. See note
+                   2 above. */
+                min-height: 132mm;
+            }
+
+            /* ==============================================================
+               The corner curves
+               ==============================================================
+               A layer of its own, clipped to the page, so the shapes can run
+               off the paper edge without an overflow rule on the page itself -
+               which would cut the table in half at a page break rather than
+               clip a decoration. Everything readable sits in `.jev-body`, one
+               stacking level up.
+
+               THE RULE THAT KEEPS THIS TIDY: every shape is an ellipse whose
+               CENTRE is off the paper, 6mm outside both edges of its corner.
+               A centre that is off the page means only one quadrant of the
+               ellipse can ever fall on it, so each shape reads as a single
+               arc sweeping between two edges of the paper.
+
+               That is not a style preference, it is the fix for a specific
+               failure: a ring whose centre is ON the page closes, and the
+               bottom of that circle then prints across the middle of the
+               document as a thick grey letter O. If you move one of these,
+               keep its centre off the paper.
+
+               The four are two concentric pairs - lime fill with a grey arc
+               just outside it - so the corners answer each other instead of
+               looking like four unrelated shapes. */
+            .jev-deco {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                overflow: hidden;
+                z-index: 0;
+            }
+            .jev-body {
+                position: relative;
+                z-index: 1;
+                /* Reserves the whole stationery band at the foot of the page:
+                   the contact strip, the signature block above it, and the
+                   grey arc that runs between that block and the table. All
+                   three are positioned against the bottom of the page rather
+                   than flowing, so this padding is the only thing that keeps
+                   the table from running down into them.
+
+                   It is also what sets how many rows fit on the page: every
+                   millimetre taken off here is a millimetre of table. 40mm
+                   buys a ninth row and was tried - at nine rows the last row
+                   lands on the grey rim, because the rim is an arc and the
+                   table's far corner meets it before its top does. 44mm keeps
+                   a clear gap in the worst case the page can hold. */
+                padding-bottom: 44mm;
+            }
+            /* Top-left: centre at 6mm outside the top and left edges.
+               The lime reaches 32mm across and 52mm down the page; the grey
+               rim sits directly on it, 32mm to 37mm across. Both stay well
+               inside 44.5mm, which is where `.jev-lines` begins (194mm of
+               printable width, less its 6mm right margin, less its own 74%) -
+               widen them and the arc draws through the table. */
+            .jev-deco__tl-fill {
+                position: absolute;
+                left: -44mm;
+                top: -64mm;
+                width: 76mm;
+                height: 116mm;
+                border-radius: 50%;
+                background: #f1f2b6;
+            }
+            .jev-deco__tl-arc {
+                position: absolute;
+                left: -49mm;
+                top: -69mm;
+                width: 86mm;
+                height: 126mm;
+                border-radius: 50%;
+                border: 5mm solid #d8d9db;
+            }
+
+            /* Bottom-right: centre at 6mm outside the bottom and right edges,
+               and the heights are measured against the signature block, which
+               is pinned 10mm off the bottom and is about 18mm tall.
+
+                   grey rim   31mm - 36mm above the paper's bottom edge
+                   lime top   31mm, so the rim sits directly on it
+                   signatures 10mm - 28mm, so they sit ON the lime
+                   table      never below 44mm - see `.jev-body` padding
+
+               The gap between 28mm and 31mm is the whole point: it is what
+               keeps a grey band from printing through a signature line. Move
+               any of these four numbers and check that gap again.
+
+               Each arc's radii are its lime's plus its own 5mm border, so the
+               grey reads as a rim on the lime rather than a second shape
+               floating above it. Give the arc more than that and the two stop
+               looking related - the gap between them widens as they sweep, and
+               the corner turns into a loose grey swoosh across the page. */
+            .jev-deco__br-fill {
+                position: absolute;
+                right: -121mm;
+                bottom: -43mm;
+                width: 230mm;
+                height: 74mm;
+                border-radius: 50%;
+                background: #dce63c;
+                opacity: .85;
+            }
+            .jev-deco__br-arc {
+                position: absolute;
+                right: -126mm;
+                bottom: -48mm;
+                width: 240mm;
+                height: 84mm;
+                border-radius: 50%;
+                border: 5mm solid #c9cacc;
+            }
+
+            /* ==============================================================
+               Header
+               ============================================================== */
+            .jev-head {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .jev-head td {
+                vertical-align: top;
+                padding: 0;
+            }
+            .jev-head__meta {
+                width: 34%;
+                font-size: 11px;
+            }
+            .jev-head__meta div {
+                white-space: nowrap;
+            }
+            .jev-head__meta-value {
+                font-weight: 700;
+                margin: 0 1.5mm;
+            }
+            .jev-head__title {
+                width: 32%;
+                text-align: center;
+            }
+            .jev-head__title-ar {
+                font-size: 19px;
+                font-weight: 700;
+                direction: rtl;
+            }
+            .jev-head__title-en {
+                font-size: 10px;
+                color: #555;
+                margin-top: 0.5mm;
+            }
+            .jev-head__logo {
+                width: 34%;
+                text-align: right;
+            }
+            .jev-head__logo img {
+                max-height: 13mm;
+                max-width: 55mm;
+                object-fit: contain;
+            }
+            .jev-head__logo-text {
+                font-size: 15px;
+                font-weight: 700;
+            }
+            .jev-rule {
+                border-bottom: 1.5px solid #d4d4d4;
+                margin: 1.5mm 0 2.5mm;
+            }
+
+            /* ==============================================================
+               Amount block
+               ============================================================== */
+            .jev-amount {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 2mm;
+            }
+            .jev-amount td {
+                vertical-align: top;
+                padding: 0;
+            }
+            .jev-amount__words {
+                width: 30%;
+                direction: rtl;
+                text-align: right;
+            }
+            .jev-amount__words-label {
+                font-weight: 700;
+            }
+            .jev-amount__words-value {
+                font-size: 11px;
+                line-height: 1.45;
+                margin-top: 1mm;
+            }
+            .jev-amount__figure {
+                width: 40%;
+                text-align: center;
+                font-size: 11px;
+            }
+            .jev-amount__figure-value {
+                font-weight: 700;
+                margin: 0 1mm;
+            }
+            .jev-amount__figure-ar {
+                direction: rtl;
+                display: inline-block;
+                margin-right: 4mm;
+            }
+            .jev-amount__number {
+                width: 30%;
+                direction: rtl;
+                text-align: right;
+            }
+            .jev-to {
+                direction: rtl;
+                text-align: right;
+                font-size: 13px;
+                font-weight: 700;
+                margin-bottom: 2.5mm;
+            }
+
+            /* ==============================================================
+               Lines
+               ==============================================================
+               Two columns, not four. The journal entry's debit/credit pair
+               collapses into one المبلغ column because a line only appears on
+               the voucher for its own side - see VOUCHER_SIDES in
+               models/account_move.py - and the partner column is gone
+               entirely. `direction: rtl` on the table is what puts المبلغ on
+               the right and لقاء on the left, so the source order of the two
+               cells is right-to-left. */
+            .jev-lines {
+                width: 74%;
+                margin-right: 6mm;
+                margin-left: auto;
+                border-collapse: collapse;
+                direction: rtl;
+                font-size: 9.5px;
+                line-height: 1.3;
+            }
+            .jev-lines th {
+                border: 1px solid #555;
+                padding: 0.8mm 2mm;
+                text-align: center;
+                font-weight: 700;
+            }
+            .jev-lines th span {
+                font-size: 8.5px;
+                font-weight: 400;
+            }
+            .jev-lines td {
+                border: 1px solid #777;
+                padding: 0.8mm 2mm;
+                text-align: right;
+            }
+            .jev-lines__amount {
+                width: 26%;
+                direction: ltr;
+                text-align: right;
+            }
+            .jev-lines__label {
+                width: 74%;
+            }
+            /* ==============================================================
+               Signatures and the contact strip
+               ============================================================== */
+            /* Pinned to the page, not flowed after the table. The signature
+               lines are stationery: they belong at the foot of the voucher
+               whether it has one row or ten, and pinning them is also what
+               makes their overlap with the corner curves a fixed geometry
+               that can be reasoned about once - see `.jev-deco__br-arc`. */
+            .jev-sign {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 10mm;
+                width: 100%;
+                border-collapse: collapse;
+                direction: rtl;
+                font-size: 11px;
+            }
+            .jev-sign td {
+                padding: 0.6mm 2mm;
+                vertical-align: top;
+            }
+            .jev-sign__field {
+                width: 34%;
+                text-align: right;
+            }
+            .jev-sign__field-line {
+                display: inline-block;
+                width: 38mm;
+                border-bottom: 1px solid #333;
+            }
+            .jev-sign__role {
+                width: 33%;
+                text-align: center;
+            }
+            .jev-sign__role-en {
+                direction: ltr;
+                display: inline-block;
+                font-size: 9.5px;
+                color: #333;
+            }
+            .jev-sign__second td {
+                padding-top: 3.5mm;
+            }
+
+            .jev-foot {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                text-align: center;
+                font-size: 9px;
+                color: #333;
+                line-height: 1.45;
+            }
+        </style>
+    </template>
+
+    <!-- ==================================================================
+         One document. `o` is the journal entry and `voucher_type` is a key of
+         VOUCHER_SIDES ('payment' or 'receipt'); both are set by the two entry
+         points below. Everything printed comes out of one call to
+         `_journal_voucher_values`, so the layout does no arithmetic.
+         ================================================================== -->
+    <template id="report_voucher_document">
+        <t t-set="voucher" t-value="o._journal_voucher_values(voucher_type)"/>
+        <t t-set="currency" t-value="voucher['currency']"/>
+        <t t-set="is_payment" t-value="voucher_type == 'payment'"/>
+        <t t-set="title_ar" t-value="'سند دفع' if is_payment else 'سند قبض'"/>
+        <t t-set="title_en" t-value="'Payment Voucher' if is_payment else 'Receipt Voucher'"/>
+        <t t-set="figure_ar" t-value="'دفعنا مبلغاً وقدره' if is_payment else 'قبضنا مبلغاً وقدره'"/>
+        <t t-set="to_ar" t-value="'إلى' if is_payment else 'من'"/>
+
+        <div class="jev">
+            <t t-call="journal_entry_payment_voucher.report_voucher_style"/>
+            <div class="page jev-page">
+                <div class="jev-deco">
+                    <div class="jev-deco__tl-fill"/>
+                    <div class="jev-deco__tl-arc"/>
+                    <div class="jev-deco__br-fill"/>
+                    <div class="jev-deco__br-arc"/>
+                </div>
+
+                <div class="jev-body">
+                    <!-- Header: date and currency, the title, the logo -->
+                    <table class="jev-head">
+                        <tr>
+                            <td class="jev-head__meta">
+                                <div dir="ltr">
+                                    <strong>DATE</strong>
+                                    <span class="jev-head__meta-value" t-field="o.date" t-options="{'widget': 'date'}"/>
+                                    <span>تاريخ</span>
+                                </div>
+                                <div dir="ltr">
+                                    <strong>CURRENCY</strong>
+                                    <span class="jev-head__meta-value" t-out="currency.name"/>
+                                    <span>العملة</span>
+                                </div>
+                            </td>
+                            <td class="jev-head__title">
+                                <div class="jev-head__title-ar" t-out="title_ar"/>
+                                <div class="jev-head__title-en" t-out="title_en"/>
+                            </td>
+                            <td class="jev-head__logo">
+                                <t t-if="o.company_id.logo">
+                                    <img t-att-src="image_data_uri(o.company_id.logo)" alt=""/>
+                                </t>
+                                <t t-else="">
+                                    <div class="jev-head__logo-text" t-out="o.company_id.name"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="jev-rule"/>
+
+                    <!-- The amount, three ways: in words, in figures, and the
+                         voucher's own number. -->
+                    <table class="jev-amount">
+                        <tr>
+                            <td class="jev-amount__words">
+                                <div class="jev-amount__words-label">المبلغ كتابة</div>
+                                <div class="jev-amount__words-value" t-out="voucher['amount_words']"/>
+                            </td>
+                            <td class="jev-amount__figure">
+                                <span>AMOUNT</span>
+                                <strong class="jev-amount__figure-value">
+                                    <span t-out="voucher['total_text']"/>
+                                    <span t-out="currency.name"/>
+                                </strong>
+                                <span class="jev-amount__figure-ar" t-out="figure_ar"/>
+                            </td>
+                            <td class="jev-amount__number">
+                                <strong>رقم:</strong>
+                                <span t-out="o.name or ''"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="jev-to">
+                        <span t-out="to_ar"/>
+                        <span t-out="o.ref or '................................'"/>
+                    </div>
+
+                    <!-- المبلغ and لقاء. RTL table: the first cell prints on
+                         the right. -->
+                    <table class="jev-lines">
+                        <thead>
+                            <tr>
+                                <th class="jev-lines__amount">المبلغ<br/><span>Amount</span></th>
+                                <th class="jev-lines__label">لقاء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="voucher['rows']" t-as="row">
+                                <td class="jev-lines__amount" t-out="row['amount_text']"/>
+                                <td class="jev-lines__label" t-out="row['label']"/>
+                            </tr>
+                            <tr t-if="not voucher['rows']">
+                                <td class="jev-lines__amount">-</td>
+                                <td class="jev-lines__label">
+                                    <t t-if="is_payment">لا توجد بنود مدينة في هذا القيد</t>
+                                    <t t-else="">لا توجد بنود دائنة في هذا القيد</t>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <table class="jev-sign">
+                    <tr>
+                        <td class="jev-sign__field">
+                            <strong>اسم المستلم:</strong>
+                            <span class="jev-sign__field-line"/>
+                        </td>
+                        <td class="jev-sign__role">
+                            <strong>المحاسبة</strong><br/>
+                            <span class="jev-sign__role-en">Accounting</span>
+                        </td>
+                        <td class="jev-sign__role">
+                            <strong>الإدارة</strong><br/>
+                            <span class="jev-sign__role-en">Management</span>
+                        </td>
+                    </tr>
+                    <tr class="jev-sign__second">
+                        <td class="jev-sign__field">
+                            <strong>التوقيع:</strong>
+                            <span class="jev-sign__field-line"/>
+                        </td>
+                        <td/>
+                        <td/>
+                    </tr>
+                </table>
+
+                <div class="jev-foot">
+                    <div dir="ltr">
+                        <t t-if="o.company_id.phone"><span t-out="o.company_id.phone"/></t>
+                        <t t-if="o.company_id.email"> • <span t-out="o.company_id.email"/></t>
+                        <t t-if="o.company_id.website"> • <span t-out="o.company_id.website"/></t>
+                    </div>
+                    <t t-set="company_address" t-value="[part for part in [o.company_id.street, o.company_id.street2, o.company_id.city, o.company_id.country_id.name] if part]"/>
+                    <div t-if="company_address" t-out="', '.join(company_address)"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ==================================================================
+         The two entry points. Each names its side and hands the loop to the
+         shared document, so the only thing that can drift between the payment
+         and the receipt voucher is the one value set here.
+
+         The charset meta is not decoration: without it the PDF engine has been
+         seen to read this file's UTF-8 Arabic as Latin-1 and print mojibake.
+         ================================================================== -->
+    <template id="report_payment_voucher">
+        <t t-call="web.html_container">
+            <meta charset="utf-8"/>
+            <t t-set="voucher_type" t-value="'payment'"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-call="journal_entry_payment_voucher.report_voucher_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_receipt_voucher">
+        <t t-call="web.html_container">
+            <meta charset="utf-8"/>
+            <t t-set="voucher_type" t-value="'receipt'"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-call="journal_entry_payment_voucher.report_voucher_document"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

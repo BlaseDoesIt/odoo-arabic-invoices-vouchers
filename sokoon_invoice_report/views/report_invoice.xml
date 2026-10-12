@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!--
+            Customer block printed at the top left of the invoice.
+
+            The standard report renders it with the "contact" widget, which
+            expands the address format configured on the partner's country. On
+            this database that format leaks the literal token
+            "partner_id.title.name" into the PDF, so the block is rebuilt here
+            explicitly with a fixed "الزبون" label instead of the partner title.
+
+            dir="ltr" keeps the label on the left of the name, as in the
+            existing layout, while the rest of the page stays right-to-left.
+        -->
+        <template id="invoice_customer_block">
+            <div name="sokoon_customer_block" class="mb-0" dir="ltr" style="text-align: left;">
+                <span><strong>الزبون</strong></span>
+                <span class="ms-4" t-field="o.partner_id.name"/>
+            </div>
+            <div name="sokoon_customer_address" dir="ltr" style="text-align: left;">
+                <div t-if="o.partner_id.street" t-out="o.partner_id.street"/>
+                <div t-if="o.partner_id.street2" t-out="o.partner_id.street2"/>
+                <div t-if="o.partner_id.zip or o.partner_id.city or o.partner_id.state_id">
+                    <span t-if="o.partner_id.zip" t-out="o.partner_id.zip"/>
+                    <span t-if="o.partner_id.city" t-out="o.partner_id.city"/>
+                    <span t-if="o.partner_id.state_id" t-out="o.partner_id.state_id.name"/>
+                </div>
+                <div t-if="o.partner_id.country_id" t-out="o.partner_id.country_id.name"/>
+            </div>
+        </template>
+
+        <!--
+            Swap the standard <address> element for the block above, in the
+            three shipping-address variants of the standard template.
+        -->
+        <template id="report_invoice_document_customer_label"
+                  inherit_id="account.report_invoice_document">
+
+            <xpath expr="//div[@name='address_not_same_as_shipping']//address" position="replace">
+                <t t-call="sokoon_invoice_report.invoice_customer_block"/>
+            </xpath>
+
+            <xpath expr="//div[@name='address_same_as_shipping']//address" position="replace">
+                <t t-call="sokoon_invoice_report.invoice_customer_block"/>
+            </xpath>
+
+            <xpath expr="//div[@name='no_shipping']//address" position="replace">
+                <t t-call="sokoon_invoice_report.invoice_customer_block"/>
+            </xpath>
+
+        </template>
+
+    </data>
+</odoo>

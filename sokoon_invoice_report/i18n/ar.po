@@ -1,0 +1,363 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sokoon_invoice_report
+#
+# Arabic terms for the standalone invoice document
+# (sokoon_invoice_report.sokoon_invoice_document).
+#
+# The template is a copy of the stock account.report_invoice_document, so it
+# does not inherit the translations that ship with the account module: view
+# translations live in the arch_db of each individual view. These terms are
+# taken from addons/account/i18n/ar.po for the 19.0 branch, with "Invoice Date"
+# adjusted to the wording used in the reference invoice.
+#
+# Loaded for ar_001 and ar_SY alike: get_base_langs() reduces both to "ar".
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0
+"
+"Report-Msgid-Bugs-To: 
+"
+"Last-Translator: 
+"
+"Language-Team: Arabic
+"
+"Language: ar
+"
+"MIME-Version: 1.0
+"
+"Content-Type: text/plain; charset=UTF-8
+"
+"Content-Transfer-Encoding: 8bit
+"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;
+"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "- Installment of"
+msgstr "- قسط"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<br/> on this account:"
+msgstr "<br/> في هذا الحساب:"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<span> due on </span>"
+msgstr "<span> مستحق في </span>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<span>1.00</span>"
+msgstr "<span>1.00</span>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<span>Amount</span>"
+msgstr "<span>المبلغ</span>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<span>Description</span>"
+msgstr "<span>الوصف</span>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<span>Disc.%</span>"
+msgstr "<span>خصم %</span>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<span>Quantity</span>"
+msgstr "<span>الكمية</span>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<span>Taxes</span>"
+msgstr "<span>الضرائب</span>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<span>Unit Price</span>"
+msgstr "<span>سعر الوحدة</span>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong class=\"d-block mt-3\">Shipping Address</strong>"
+msgstr "<strong class=\"d-block mt-3\">عنوان الشحن</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Credit Note Date</strong>"
+msgstr "<strong>تاريخ إشعار الدائن</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Customer Code</strong>"
+msgstr "<strong>كود العميل</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Date</strong>"
+msgstr "‏<strong>التاريخ</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Delivery Date</strong>"
+msgstr "<strong>تاريخ التوصيل</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Due Date</strong>"
+msgstr "<strong>تاريخ الاستحقاق</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Incoterm</strong>"
+msgstr "<strong>شرط التجارة الدولي</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Invoice Date</strong>"
+msgstr "<strong>تاريخ الفاتورة</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Receipt Date</strong>"
+msgstr "<strong>تاريخ الإيصال</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Reference</strong>"
+msgstr "<strong>رقم الإشارة</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Source</strong>"
+msgstr "<strong>المصدر</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "<strong>Taxable Supply</strong>"
+msgstr "<strong>التوريد الخاضع للضريبة</strong>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "A note, whose content usually applies to the section or product above."
+msgstr "ملاحظة ينطبق محتواها عادةً على القسم أو المنتج أعلاه."
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "A section title"
+msgstr "عنوان القسم"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Amount Due"
+msgstr "المبلغ المستحق"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Bacon Burger"
+msgstr "برجر لحم مقدد"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Cancelled Credit Note"
+msgstr "إشعار الدائن الملغي"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Cancelled Invoice"
+msgstr "فاتورة ملغاة"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Cancelled Proforma Credit Note"
+msgstr "الإشعار الدائن الشكلي الملغي"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Cancelled Proforma Invoice"
+msgstr "فاتورة شكلية ملغية"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+#. odoo-python
+msgid "Credit Note"
+msgstr "إشعار دائن"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+#. odoo-python
+msgid "Draft Credit Note"
+msgstr "مسودة إشعار دائن"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+#. odoo-python
+msgid "Draft Invoice"
+msgstr "مسودة فاتورة"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Draft Proforma Credit Note"
+msgstr "مسودة الإشعار الدائن الشكلي"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Draft Proforma Invoice"
+msgstr "مسودة فاتورة شكلية"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Group 1"
+msgstr "المجموعة 1"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "ICE:"
+msgstr "ICE:"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "INV/2023/00001"
+msgstr "INV/2023/00001"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "INV/2023/0001"
+msgstr "INV/2023/0001"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+#. odoo-javascript
+#. odoo-python
+msgid "Invoice"
+msgstr "الفاتورة"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "PAY IN A FLASH!"
+msgstr "تمكن من الدفع بسرعة البرق!"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+#. odoo-javascript
+msgid "Paid on"
+msgstr "تم الدفع في"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Payment Communication:"
+msgstr "التواصل بشأن الدفع:"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Payment within 30 calendar day"
+msgstr "الدفع خلال 30 يوم"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Proforma Credit Note"
+msgstr "الإشعار الدائن الشكلي"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Proforma Invoice"
+msgstr "فاتورة شكلية"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Proforma Vendor Bill"
+msgstr "فاتورة المورّد الشكلية"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Proforma Vendor Credit Note"
+msgstr "الإشعار الدائن الشكلي للمورّد"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+#. odoo-javascript
+msgid "Reversed on"
+msgstr "تم عكسه بتاريخ"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "SO123"
+msgstr "SO123"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Scan the QR code<br/>or click to pay online"
+msgstr "قم بمسح رمز QR <br/> أو اضغط للدفع عبر الإنترنت"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Scan this QR Code with<br/>your banking application"
+msgstr "قم بمسح كود QR باستخدام<br/>تطبيقك البنكي"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Self Billing"
+msgstr "الفوترة الذاتية"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Self Billing Credit Note"
+msgstr "الإشعار الدائن للفوترة الذاتية"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Tax 15%"
+msgstr "ضريبة 15%"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Tax ID"
+msgstr "معرف الضريبة"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Thirty one dollar and Five cents"
+msgstr "واحد وثلاثون دولاراً وخمس سنتات"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Total amount in words: <br/>"
+msgstr "إجمالي المبلغ بالكلمات: <br/>"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Unit"
+msgstr "الوحدة"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Units"
+msgstr "الوحدات"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Vendor Bill"
+msgstr "فاتورة المورد"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "Vendor Credit Note"
+msgstr "إشعار المورد الدائن"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "due if paid before"
+msgstr "مستحق إذا تم الدفع قبل"
+
+#: model_terms:ir.ui.view,arch_db:sokoon_invoice_report.sokoon_invoice_document
+#. module: account
+msgid "units"
+msgstr "وحدات"
