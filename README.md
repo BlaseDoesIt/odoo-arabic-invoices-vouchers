@@ -51,7 +51,7 @@ odoo-bin -d <test_db> -i journal_entry_payment_voucher --test-enable --stop-afte
 
 ## Author
 
-Built by **Kosai Alhafez**, business systems developer and accountant.
+Built by **Kosai Alhafez**, business systems developer.
 [blasedoesit.com](https://blasedoesit.com) · kosai@blasedoesit.com
 
 ## License
